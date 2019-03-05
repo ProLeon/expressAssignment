@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://code.jquery.com/jquery.js"></script>
+    </head>
+    <body>
+        <h1>Survey Question</h1>
+        <hr>
+        <h2>About You</h2>
+        <h3>Name (Required)</h3>
+        <input id="name" placeholder="Name"></input>
+        <input id="photo" placeholder="ex: http://example.jpg"></input>
+        <h3>Queston #1</h3>
+        <p>Your mind is always buzzing with unexplored ideas and plans.</p>
+        <p>
+            <select id="q1">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #2</h3>
+        <p>Generally speaking, you rely more on your experience than your imagination.</p>
+        <p>
+            <select id="q2">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #3</h3>
+        <p>You find it easy to stay relaxed and focused even when there is some pressure.</p>
+        <p>
+            <select id="q3">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #4</h3>
+        <p>You rarely do something just out of sheer curiosity.</p>
+        <p>
+            <select id="q4">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #5</h3>
+        <p>People can rarely upset you.</p>
+        <p>
+            <select id="q5">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #6</h3>
+        <p>It is often difficult for you to relate to other people’s feelings.</p>
+        <p>
+            <select id="q6">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #7</h3>
+        <p>In a discussion, truth should be more important than people’s sensitivities.</p>
+        <p>
+            <select id="q7">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #8</h3>
+        <p>You rarely get carried away by fantasies and ideas.</p>
+        <p>
+            <select id="q8">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #9</h3>
+        <p>You think that everyone’s views should be respected regardless of whether they are supported by facts or not.</p>
+        <p>
+            <select id="q9">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        <h3>Queston #10</h3>
+        <p>You feel more energetic after spending time with a group of people.</p>
+        <p>
+            <select id="q10">
+                <option value="1">1 (Strongly Disagree)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (Strongly Agree)</option>
+            </select>
+        </p>
+        
+        <button>Submit</button>
+        <div id="matchedBox">
+
+        </div>
+        <script>
+            let numArray = [];
+            $("button").on("click", function(){
+                $("#matchedBox").empty();
+                let k = 1;
+                while(k <= 10){
+                    chosen = $('#q' + k).find(":selected").text();
+                    numArray.push(chosen[0]);
+                    k++;
+                }
+                let newFriend = {
+                    name: $("#name").val(),
+                    photo: $("#photo").val(),
+                    scores: numArray
+                }
+                $.get("/api/friends", function(data){
+                    let totalDiff = 0;
+                    let newDiff = 40;
+                    for(i = 0; i < data.length; i++){
+                        for(let j = 0; j < data[i].scores.length;j++){
+                            totalDiff += Math.abs(data[i].scores[j] - parseInt(newFriend.scores[j]));
+                        }
+                        console.log(totalDiff);
+                        if(totalDiff < newDiff){
+                            newDiff = totalDiff;
+                            friendIndex = i;
+                        }
+                        
+
+                        totalDiff = 0;    
+                    }
+                    $("#matchedBox").append(
+                        "<h2> You matched with " + data[friendIndex].name + "</h2>" +
+                        "<img src='" + data[friendIndex].photo + "'/>"              
+                    )
+                    newDiff = 40;
+                    numArray = [];
+                });
+                $.post("/api/friends", newFriend,
+                    function(data) {
+
+                    });
+            });
+            
+         
+
+        </script>
+    </body>
+</html>
